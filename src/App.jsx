@@ -39,17 +39,13 @@ import './theme/variables.css';
 class App extends React.Component {
   constructor(props) {
     super(props);
+    let t = [];
+    if('tasks' in localStorage) {
+      t = JSON.parse(localStorage.tasks);
+      console.log('[info] Load localStrorage');
+    }
     this.state = {
-      tasks: [
-        {
-          "title": "NUcampでアプリを作る",
-          "limit": "11/21"
-        },
-        {
-          "title": "勉強する",
-          "limit": "12/1"
-        }
-      ]
+      tasks: t
     };
     this.deleteTask = this.deleteTask.bind(this);
     this.addTask = this.addTask.bind(this);
@@ -61,6 +57,8 @@ class App extends React.Component {
     newTasks.splice(index, 1);
     this.setState({tasks: newTasks})
     console.log('[info] deleteTasks: ', this.state.tasks);
+    localStorage.tasks = JSON.stringify(this.state.tasks);
+    console.log('[info] Save to localStorage');
   }
 
   //追加ボタンを押したときの処理
@@ -72,11 +70,16 @@ class App extends React.Component {
     let updatedTasks = this.state.tasks;
     updatedTasks.push(newTask);
     this.setState({tasks: updatedTasks});
-    console.log('[info] addTasks: ', this.state.tasks)
+    console.log('[info] addTasks: ', this.state.tasks);
+    localStorage.tasks = JSON.stringify(this.state.tasks);
+    console.log('[info] Save to localStorage');
   }
 
-  ionViewDidEnter() {
-    console.log('App: ', this.state.tasks);
+  ionViewWillEnter() {
+    if('tasks' in localStorage) {
+      this.setState({tasks: JSON.parse(localStorage.tasks)})
+      console.log('[info] Load localStrorage');
+    }
   }
 
   render() {
@@ -106,4 +109,4 @@ class App extends React.Component {
   }
 }
 
-export default App;
+export default withIonLifeCycle(App);

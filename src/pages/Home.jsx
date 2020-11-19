@@ -21,13 +21,11 @@ import TaskList from '../components/TaskList';
 const Home = (props) => {
   const [newTaskTitle, setNewTaskTitle] = useState("")
   const [newTaskLimit, setNewTaskLimit] = useState("")
+  
   useIonViewDidEnter(() => {
     console.log('Home: ', props.tasks);
   })
-  const showTask = () => {
-    console.log("newTaskTitle: ", newTaskTitle)
-    console.log("newTaskLimit: ", newTaskLimit)
-  }
+
   return (
     <IonPage>
       {/* ------ Header ------ */}
