@@ -69,9 +69,9 @@ class App extends React.Component {
       "title": title,
       "limit": limit
     }
-    const updatedTasks = this.state.tasks;
+    let updatedTasks = this.state.tasks;
     updatedTasks.push(newTask);
-    // this.setState({tasks: tasks});
+    this.setState({tasks: updatedTasks});
     console.log('[info] addTasks: ', this.state.tasks)
   }
 
