@@ -46,7 +46,6 @@ class App extends React.Component {
           "limit": "11/21"
         },
         {
-          "task_id": 2,
           "title": "勉強する",
           "limit": "12/1"
         }
@@ -70,9 +69,9 @@ class App extends React.Component {
       "title": title,
       "limit": limit
     }
-    const tasks = this.state.tasks;
-    tasks.push(newTask);
-    this.setState({tasks: tasks});
+    const updatedTasks = this.state.tasks;
+    updatedTasks.push(newTask);
+    // this.setState({tasks: tasks});
     console.log('[info] addTasks: ', this.state.tasks)
   }
 

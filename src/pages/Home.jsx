@@ -46,9 +46,9 @@ const Home = (props) => {
         </IonItem>
         <IonItem lines="none">
           <IonLabel position="floating">期限</IonLabel>
-          <IonDatetime displayFormat="MM DD" pickerFormat="MM DD" value={newTaskLimit} onIonChange={(e) => setNewTaskLimit(e.detail.value.split('T')[0])}></IonDatetime>
+          <IonDatetime displayFormat="MM DD" pickerFormat="MM DD" value={newTaskLimit} onIonChange={(e) => {setNewTaskLimit(e.detail.value.split('T')[0]);console.log(newTaskLimit)}}></IonDatetime>
         </IonItem>
-        <IonButton onClick={() => props.addTask(newTaskTitle, newTaskLimit)} className="ion-margin-top" color="primary" type="submit" expand="block">追加</IonButton>
+        <IonButton onClick={() => props.addTask(newTaskTitle, newTaskLimit)} className="ion-margin-top" color="primary" expand="block">追加</IonButton>
       </form>
       {/* ------ TaskList ------ */}
       <IonContent className="ion-padding">
