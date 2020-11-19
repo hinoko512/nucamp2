@@ -15,7 +15,7 @@ const TaskItem = (props) => {
           <h2>{props.title}</h2>
         </IonRow>
         <IonRow>
-          <p>期限：11/11</p>
+          <p>期限：{props.limit.replace('/-/g', '/')}</p>
         </IonRow>
         <IonRow className="ion-justify-content-end">
           <IonButton color="primary" className="">編集</IonButton>
