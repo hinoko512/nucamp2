@@ -4,7 +4,6 @@ import {
   IonHeader, 
   IonToolbar,
   IonTitle, 
-  useIonViewDidEnter,
   IonContent,
   IonList,
   IonItem,
@@ -14,42 +13,49 @@ import {
   IonButton,
 } from '@ionic/react';
 
-import Profile from '../components/Profile';
 import TaskItem from '../components/TaskItem';
-import TaskList from '../components/TaskList';
 
+/*
+props:
+  task: array
+  addTask: function
+  deleteTask: function
+  name: string
+*/ 
 const Home = (props) => {
   const [newTaskTitle, setNewTaskTitle] = useState("")
   const [newTaskLimit, setNewTaskLimit] = useState("")
-  
-  useIonViewDidEnter(() => {
-    console.log('Home: ', props.tasks);
-  })
 
   return (
     <IonPage>
       {/* ------ Header ------ */}
       <IonHeader>
         <IonToolbar>
-          <IonTitle>Home</IonTitle>
+          <IonTitle>ホーム</IonTitle>
         </IonToolbar>
       </IonHeader>
-      {/* ------ Profile ------ */}
-      <Profile />
+      <IonContent className="ion-padding">
+      {/* ------ User Name ------ */}
+        <IonItem lines="none" className="ion-margin-bottom">
+          <IonLabel>ユーザー名：{props.name}</IonLabel>
+        </IonItem> 
       {/* ------ Add Task ------ */}
-      <form className="ion-padding">
         <IonItem>  
-          <IonLabel position="floating">タスク内容</IonLabel>
-          <IonInput value={newTaskTitle} onIonChange={(e) => {setNewTaskTitle(e.detail.value); console.log(newTaskTitle)}}></IonInput> 
+          <IonInput 
+            placeholder="タスク内容" 
+            onIonChange={(e) => {setNewTaskTitle(e.detail.value); console.log(newTaskTitle)}}
+          ></IonInput> 
         </IonItem>
-        <IonItem lines="none">
+        <IonItem>
           <IonLabel position="floating">期限</IonLabel>
-          <IonDatetime displayFormat="MM DD" pickerFormat="MM DD" value={newTaskLimit} onIonChange={(e) => {setNewTaskLimit(e.detail.value.split('T')[0]);console.log(newTaskLimit)}}></IonDatetime>
+          <IonDatetime 
+            displayFormat="MM DD" 
+            pickerFormat="MM DD"
+            onIonChange={(e) => {setNewTaskLimit(e.detail.value.split('T')[0]);}}
+          ></IonDatetime>
         </IonItem>
         <IonButton onClick={() => props.addTask(newTaskTitle, newTaskLimit)} className="ion-margin-top" color="primary" expand="block">追加</IonButton>
-      </form>
       {/* ------ TaskList ------ */}
-      <IonContent className="ion-padding">
       <h1>タスクリスト</h1>
       <IonList>
         {props.tasks.map((value, index) => {
@@ -62,7 +68,7 @@ const Home = (props) => {
           )  
         })}
       </IonList>
-    </IonContent>
+      </IonContent>
     </IonPage>
   )
 }

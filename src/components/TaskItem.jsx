@@ -3,7 +3,6 @@ import {
   IonGrid, 
   IonItem, 
   IonRow,
-  useIonViewDidEnter, 
 } from '@ionic/react';
 import React from 'react';
 
@@ -20,7 +19,7 @@ const TaskItem = (props) => {
         <IonRow className="ion-justify-content-end">
           <IonButton color="primary" className="">編集</IonButton>
           <IonButton color="success">完了</IonButton>
-          <IonButton color="danger" onClick={() => props.deleteTask(props.task_id)}>削除</IonButton>
+          <IonButton color="danger" onClick={() => props.deleteTask()}>削除</IonButton>
         </IonRow>
       </IonGrid>
     </IonItem>
