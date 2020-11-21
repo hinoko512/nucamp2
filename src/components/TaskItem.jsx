@@ -17,8 +17,11 @@ const TaskItem = (props) => {
           <p>期限：{props.limit.replace('/-/g', '/')}</p>
         </IonRow>
         <IonRow className="ion-justify-content-end">
-          <IonButton color="primary" className="">編集</IonButton>
-          <IonButton color="success">完了</IonButton>
+          <IonButton color="primary" onClick={() => {
+            props.showModal()
+            props.setCurrTaskIdx()
+          }}>編集</IonButton>
+          <IonButton color="success" onClick={() => props.completeTask()}>完了</IonButton>
           <IonButton color="danger" onClick={() => props.deleteTask()}>削除</IonButton>
         </IonRow>
       </IonGrid>

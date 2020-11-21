@@ -3,13 +3,17 @@ import React from 'react';
 import { Redirect, Route } from 'react-router-dom';
 
 // Pages
-import Home from './pages/Home';
-import TimeLine from './pages/TimeLine';
-import Login from './pages/Login';
-import Register from './pages/Register';
+import ProfilePage from './pages/ProfilePage';
+import TaskListPage from './pages/TaskListPage';
+import NotificationPage from './pages/NotificationPage';
 
 // icons
-import { home, notifications } from 'ionicons/icons';
+import { person, list, notifications } from 'ionicons/icons';
+
+
+//firebase
+import { getNotificationList } from './firebase';
+import { uploadNotificationData } from './firebase';
 
 // Ionic
 import '@ionic/react/css/core.css';
@@ -34,58 +38,82 @@ import {
   withIonLifeCycle,
 } from '@ionic/react';
 import { IonReactRouter } from '@ionic/react-router';
+import { convertCompilerOptionsFromJson } from 'typescript';
 
 
 class App extends React.Component {
   constructor(props) {
     super(props);
-    // localStorageからタスクを読み込む
-    let loadedTask = [];
-    let loadedName = "";
-    if('tasks' in localStorage) {
-      loadedTask = JSON.parse(localStorage.tasks);
+    let localStorageTaskList = []
+    let localStorageUserName = ""
+    let localStorageGroupMember = []
+    if('taskList' in localStorage) {
+      localStorageTaskList = JSON.parse(localStorage.taskList)
     }
-    if('name' in localStorage) {
-      loadedName = JSON.parse(localStorage.name);
+    if('userName' in localStorage) {
+      localStorageUserName = JSON.parse(localStorage.userName)
     }
-
+    if('groupMember' in localStorage) {
+      localStorageGroupMember = JSON.parse(localStorage.groupMember)
+    }
     // Stateの初期化
     this.state = {
-      userName: loadedName,
-      tasks: loadedTask,
-      notiList: [
-        {
-          "name": "hoge",
-          "taskTitle": "hogehoge"
-        },
-        {
-          "name": "hoge2",
-          "taskTitle": "hogehoge2"
-        }
-      ],
-      showFooter: false
+      userName: localStorageUserName,
+      taskList: localStorageTaskList,
+      groupMember:localStorageGroupMember,
+      notificationList: [],
+      showModal: false
     };
-    this.deleteTask = this.deleteTask.bind(this);
-    this.addTask = this.addTask.bind(this);
+    // if(this.state.groupMember.length !== 0) {
+    //   const firestoreNotificationList = getNotificationList(this.state.groupMember);
+    //   console.log('[info] getMotificationList')
+    // }
     this.setUserName = this.setUserName.bind(this);
+
+    this.addGroupMember = this.addGroupMember.bind(this);
+    this.deleteGroupMember = this.deleteGroupMember.bind(this);
+
+    this.addTask = this.addTask.bind(this);
+    this.editTask = this.editTask.bind(this);
+    this.completeTask = this.completeTask.bind(this);
+    this.deleteTask = this.deleteTask.bind(this);
+    
+    this.updateNotificationList = this.updateNotificationList.bind(this);
+    this.showNotiList = this.showNotiList.bind(this);
+  }
+  showNotiList = () => {
+    console.log(this.state.notificationList)
   }
 
-  // 完了ボタンを押したときの処理
-  completeTask(index) {
-    // タスク内容とuser_nameをFirebaseに送信
+  // ユーザネームを設定する関数
+  setUserName = (name) => {
+    this.setState({userName: name})
+    // this.state.groupMemberの0番目は常に自分
+    let newGroupMember = this.state.groupMember
+    newGroupMember[0] = name
+    this.setState({groupMember: newGroupMember})
+    console.log('[info] setUserName', this.state.userName)
+    localStorage.userName = JSON.stringify(this.state.userName)
+    localStorage.groupMember = JSON.stringify(this.state.groupMember)
+  }
+  // グループメンバーを追加する
+  addGroupMember = (name) => {
+    let newGroupMember = this.state.groupMember;
+    newGroupMember.push(name)
+    this.setState({groupMember: newGroupMember});
+    localStorage.groupMember = JSON.stringify(this.state.groupMember)
+    console.log('[info] Add GroupMember');
+  }
+  // グループメンバーを削除する
+  deleteGroupMember = (index) => {
+    let newGroupMember = this.state.groupMember;
+    newGroupMember.splice(index, 1)
+    this.setState({groupMember: newGroupMember});
+    localStorage.groupMember = JSON.stringify(this.state.groupMember)
+    console.log('[info] Delete GroupMember');
+  }
 
-    // notiListを更新&localStorageに保存
-  }
-  
-  //削除ボタンを押したときの処理
-  deleteTask = (index) => {
-    let newTasks = this.state.tasks;
-    newTasks.splice(index, 1);
-    this.setState({tasks: newTasks})
-    localStorage.tasks = JSON.stringify(this.state.tasks);
-    console.log('[info] deleteTasks: ', this.state.tasks);
-    console.log('[info] Save to localStorage');
-  }
+
 
   //追加ボタンを押したときの処理
   addTask = (title, limit) => {
@@ -93,19 +121,57 @@ class App extends React.Component {
       "title": title,
       "limit": limit
     }
-    let updatedTasks = this.state.tasks;
+    let updatedTasks = this.state.taskList;
     updatedTasks.push(newTask);
     this.setState({tasks: updatedTasks});
-    localStorage.tasks = JSON.stringify(this.state.tasks);
-    console.log('[info] addTasks: ', this.state.tasks);
-    console.log('[info] Save to localStorage');
+    localStorage.taskList = JSON.stringify(this.state.taskList);
+    console.log('[info] addTask');
+  }
+  // 編集ボタンを押した時の処理
+  editTask = (title, limit, index) => {
+    let newTaskList = this.state.taskList
+    newTaskList[index] = {
+      "title": title,
+      "limit": limit
+    }
+    this.setState({taskList: newTaskList})
+    localStorage.taskList = JSON.stringify(this.state.taskList)
+    console.log('[info] editTask')
+  }
+  // 完了ボタンを押したときの処理
+  completeTask = async (index) => {
+    let newTaskList = this.state.taskList
+    const userName = this.state.userName
+    const type = "finish"
+    const title = newTaskList[index].title
+    await uploadNotificationData(userName, type, title)
+    newTaskList.splice(index, 1)
+    this.setState({taskList: newTaskList})
+    localStorage.taskList = JSON.stringify(this.state.taskList)
+    const newList = await this.updateNotificationList()
+    console.log(newList)
+  }
+  //削除ボタンを押したときの処理
+  deleteTask = (index) => {
+    let newTaskList = this.state.taskList;
+    newTaskList.splice(index, 1);
+    this.setState({taskList: newTaskList})
+    localStorage.taskList= JSON.stringify(this.state.taskList);
+    console.log('[info] deleteTask');
   }
 
-  // ユーザネームを設定する関数
-  setUserName = (name) => {
-    this.setState({userName: name})
-    console.log('[info] setUserName', this.state.userName)
-    localStorage.name = JSON.stringify(this.state.userName)
+
+  
+  //　通知リストを更新する関数
+  updateNotificationList = async () => {
+    let newNotificationList = []
+    if(this.state.groupMember.length !== 0) {
+      newNotificationList = await getNotificationList(this.state.groupMember)
+    }
+    console.log('newNotificationList recieved', newNotificationList)
+    this.setState({ notificationList: newNotificationList })
+    console.log('[info] uploadNotificationList', this.state.notificationList)
+    return newNotificationList
   }
 
   render() {
@@ -114,34 +180,48 @@ class App extends React.Component {
         <IonReactRouter>
           <IonTabs>
             <IonRouterOutlet>
-              <Route path="/home" exact={true} render={() => 
-                <Home 
-                  tasks={this.state.tasks} 
+              {/* Profile Page */}
+              <Route path="/profile" exact={true} render={() => 
+                <ProfilePage 
+                  userName={this.state.userName}
+                  groupMember={this.state.groupMember}
+                  addGroupMember={this.addGroupMember}
+                  deleteGroupMember={this.deleteGroupMember}
+                  setUserName={this.setUserName}
+                />}
+              />
+              {/* taskList Page*/}
+              <Route path="/" render={() => <Redirect to="/tasklist" />} exact={true} />
+              <Route path="/tasklist" exact={true} render={() => 
+                <TaskListPage 
+                  taskList={this.state.taskList} 
                   deleteTask={this.deleteTask} 
                   addTask={this.addTask}
-                  name={this.state.userName}
+                  editTask={this.editTask}
+                  completeTask={this.completeTask}
+                  userName={this.state.userName}
                 />}/>
-              <Route path="/timeline" exact={true} render={() => 
-                <TimeLine 
-                  notiList={this.state.notiList}
-                />}/>
-              <Route path="/" render={() => <Redirect to="/login" />} exact={true} />
-              <Route path="/login" render={() => 
-                <Login
-                  setUserName={this.setUserName}
-                />} exact={true} />
-              <Route path="/register" render={() => 
-                <Register
-                  setUserName={this.setUserName}
-                />} exact={true} />
-
+              {/* NotificationList */}
+              <Route path="/notification" exact={true} render={() => 
+                <NotificationPage 
+                  a={this.showNotiList}
+                  notificationList={this.state.notificationList}
+                  updateNotificationList={this.updateNotificationList}
+                  userName={this.state.userName}
+                  groupMember={this.state.groupMember}
+                />}
+              />  
             </IonRouterOutlet>
             <IonTabBar slot="bottom">
-              <IonTabButton tab="home" href="/home">
-                <IonIcon icon={home} />
-                <IonLabel>ホーム</IonLabel>
+              <IonTabButton tab="profile" href="/profile">
+                <IonIcon icon={person} />
+                <IonLabel>プロフィール</IonLabel>
               </IonTabButton>
-              <IonTabButton tab="notification" href="/timeline">
+              <IonTabButton tab="tasklist" href="/tasklist">
+                <IonIcon icon={list} />
+                <IonLabel>課題リスト</IonLabel>
+              </IonTabButton>
+              <IonTabButton tab="notification" href="/notification">
                 <IonIcon icon={notifications} />
                 <IonLabel>通知</IonLabel>
               </IonTabButton>

@@ -1,7 +1,6 @@
 import firebase from "firebase/app";
 import "firebase/auth";
 import "firebase/firestore";
-import { presentToast } from "./util";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDDjOfzmXMiduuonoJfhW9ryCKg7wpX5EI",
@@ -15,32 +14,29 @@ const firebaseConfig = {
 
 firebase.initializeApp(firebaseConfig);
 
-// ログイン処理
-export async function loginUser(username, password) {
-  const email = `${username}@nucamp.com`
-
-  try {
-    const res = await firebase.auth().signInWithEmailAndPassword(email, password) 
-    console.log(res)
-    return true
-  } catch(error) {
-    presentToast(error.message)
-    console.log(error);
-    return false
-  }
+//firestoreアップロード処理
+export async function uploadNotificationData(userName, type, title) {
+  firebase.firestore().collection("notificationList").add({
+    taskType: type,
+    userName: userName,
+    taskTitle: title
+  }).then(function(docRef) {
+    console.log("Written with ID: ", docRef.id)
+  }).catch(function(error) {
+    console.log("Cloud firestore Error: ", error);
+  })
 }
 
-// サインイン処理
-export async function registerUser(username, password) {
-  const email = `${username}@nucamp.com`
-
-  try{
-    const res = await firebase.auth().createUserWithEmailAndPassword(email, password);
-    console.log(res)
-    return true
-  } catch(error) {
-    presentToast(error.message)
-    console.log(error)
-    return false
-  }
+// firestoreから読み込む処理
+export async function getNotificationList(groupMember) {
+  let res = []
+  firebase.firestore().collection("notificationList").where("userName", "in", groupMember)
+    .get()
+    .then((querySnapshot) => { 
+      querySnapshot.forEach((doc) => {
+        res.push(doc.data())
+      })
+    }
+  )
+  return res
 }
