@@ -1,7 +1,7 @@
-import { 
-  IonContent, 
-  IonItem, 
-  IonList, 
+import {
+  IonContent,
+  IonItem,
+  IonList,
   IonPage,
   IonHeader,
   IonToolbar,
@@ -10,25 +10,19 @@ import {
   IonButton,
   IonLabel,
   IonAlert,
-  useIonViewWillEnter
-} from '@ionic/react'
-import React, { useState } from 'react'
-import GroupMember from '../components/GroupMember';
+  useIonViewWillEnter,
+} from "@ionic/react";
+import React, { useState } from "react";
+import GroupMember from "../components/GroupMember";
 
-/*
-props:
-  myName: string
-  teamMember: array
-  setUserName: function
-*/ 
 const ProfilePage = (props) => {
-  const [addMemberName, setAddMemberName] = useState(false)
-  const [showEditNameAlert, setShowEditNameAlert] = useState(false)
+  const [addMemberName, setAddMemberName] = useState(false);
+  const [showEditNameAlert, setShowEditNameAlert] = useState(false);
 
   useIonViewWillEnter(() => {
-    console.log('willEnter: profile\n', localStorage.taskList)
-  })
-  return(
+    console.log("willEnter: profile\n", localStorage.taskList);
+  });
+  return (
     <IonPage>
       <IonHeader>
         <IonToolbar>
@@ -40,35 +34,35 @@ const ProfilePage = (props) => {
       <div className="ion-padding">
         <IonItem lines="none">
           <IonLabel>名前：{props.userName}</IonLabel>
-          <IonButton onClick={() => setShowEditNameAlert(true)}>編集</IonButton>  
-        </IonItem> 
+          <IonButton onClick={() => setShowEditNameAlert(true)}>編集</IonButton>
+        </IonItem>
       </div>
 
       {/* 名前編集用alert */}
       <IonAlert
         isOpen={showEditNameAlert}
         onDidDismiss={() => setShowEditNameAlert(false)}
-        header={'名前を入力してください'}
+        header={"名前を入力してください"}
         buttons={[
           {
             text: "キャンセル",
             handler: () => {
-              setShowEditNameAlert(false)
-            }
+              setShowEditNameAlert(false);
+            },
           },
           {
             text: "完了",
             handler: (data) => {
-              props.setUserName(data.name)
-            }
-          }
+              props.setUserName(data.name);
+            },
+          },
         ]}
         inputs={[
           {
             name: "name",
-            type: 'text',
-            placeholder: props.userName
-          }
+            type: "text",
+            placeholder: props.userName,
+          },
         ]}
       />
 
@@ -77,29 +71,33 @@ const ProfilePage = (props) => {
         <h3>グループ</h3>
       </div>
 
-      <IonContent className="ion-padding">  
-
-        <IonInput 
-          placeholder="追加したいメンバーの名前" 
-          onIonChange={(e) => {setAddMemberName(e.target.value)}}
+      <IonContent className="ion-padding">
+        <IonInput
+          placeholder="追加したいメンバーの名前"
+          onIonChange={(e) => {
+            setAddMemberName(e.target.value);
+          }}
         />
-        <IonButton 
+        <IonButton
           expand="block"
-          onClick={() => props.addGroupMember(addMemberName)}>追加</IonButton>
+          onClick={() => props.addGroupMember(addMemberName)}
+        >
+          追加
+        </IonButton>
         <IonList>
           {props.groupMember.map((value, index) => {
-            return(
+            return (
               <GroupMember
                 key={index.toString()}
                 name={value}
                 index={index}
                 deleteGroupMember={() => props.deleteGroupMember(index)}
               />
-            )
+            );
           })}
         </IonList>
       </IonContent>
     </IonPage>
-  )
-}
-export default ProfilePage
+  );
+};
+export default ProfilePage;

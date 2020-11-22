@@ -1,45 +1,39 @@
-import React, { useState } from 'react';
-import NotificationItem from '../components/NotificationItem';
-import { getNotificationList }  from '../firebase';
-import firebase from 'firebase/app';
-import 'firebase/firestore';
+import React, { useState } from "react";
+import NotificationItem from "../components/NotificationItem";
+import firebase from "firebase/app";
+import "firebase/firestore";
 
-import { 
-  IonPage, 
-  IonHeader, 
+import {
+  IonPage,
+  IonHeader,
   IonToolbar,
   IonTitle,
   IonList,
   IonContent,
   useIonViewWillEnter,
-  useIonViewDidEnter
-} from '@ionic/react';
+} from "@ionic/react";
 
-/*
-props:
-  notificationList: array
-  myName: string
-*/ 
 const NotificationPage = (props) => {
-  const [notificationList, setNotificationList] = useState([])
+  const [notificationList, setNotificationList] = useState([]);
 
-  useIonViewWillEnter(async() => {
-    if(props.groupMember.length !== 0) {
-      const querySnapshot = await 
-        firebase.firestore()
+  useIonViewWillEnter(async () => {
+    if (props.groupMember.length !== 0) {
+      console.log(props.groupMember);
+      const querySnapshot = await firebase
+        .firestore()
         .collection("notificationList")
         .where("userName", "in", props.groupMember)
-        .get()
+        .get();
       const newList = [];
-      querySnapshot.forEach(doc => {
+      querySnapshot.forEach((doc) => {
         newList.push(doc.data());
       });
-      console.log(newList)
+      console.log(newList);
       setNotificationList(newList);
     }
-  })
+  });
 
-  return(
+  return (
     <IonPage>
       {/*------ Header ------*/}
       <IonHeader>
@@ -51,20 +45,19 @@ const NotificationPage = (props) => {
       <IonContent className="ion-padding">
         <IonList>
           {notificationList.map((value, index) => {
-            return( 
-              <NotificationItem 
+            return (
+              <NotificationItem
                 key={index.toString()}
                 myName={props.userName}
                 name={value.userName}
-                type={value.taskType} 
-                taskTitle={value.taskTitle}>
-              </NotificationItem>
+                type={value.taskType}
+                taskTitle={value.taskTitle}
+              ></NotificationItem>
             );
           })}
         </IonList>
       </IonContent>
-      
     </IonPage>
-  )
-}
+  );
+};
 export default NotificationPage;
