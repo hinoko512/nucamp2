@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import NotificationItem from '../components/NotificationItem';
 import { getNotificationList }  from '../firebase';
+import firebase from 'firebase/app';
+import 'firebase/firestore';
 
 import { 
   IonPage, 
@@ -9,7 +11,8 @@ import {
   IonTitle,
   IonList,
   IonContent,
-  useIonViewWillEnter
+  useIonViewWillEnter,
+  useIonViewDidEnter
 } from '@ionic/react';
 
 /*
@@ -21,13 +24,19 @@ const NotificationPage = (props) => {
   const [notificationList, setNotificationList] = useState([])
 
   useIonViewWillEnter(async() => {
-    const newNotificationList = await props.updateNotificationList()
-    setNotificationList(newNotificationList)
-    console.log('newNotificationList', newNotificationList)
-    console.log('notificationList', notificationList)
+    const querySnapshot = await 
+      firebase.firestore()
+      .collection("notificationList")
+      .where("userName", "in", props.groupMember)
+      .get()
+    const newList = [];
+    querySnapshot.forEach(doc => {
+      newList.push(doc.data());
+    });
+    console.log(newList)
+    setNotificationList(newList);
+    console.log(notificationList)
   })
-
-    
 
   return(
     <IonPage>
@@ -40,7 +49,7 @@ const NotificationPage = (props) => {
       {/* ------- Contetet ------ */}
       <IonContent className="ion-padding">
         <IonList>
-          {props.notificationList.map((value, index) => {
+          {notificationList.map((value, index) => {
             return( 
               <NotificationItem 
                 key={index.toString()}

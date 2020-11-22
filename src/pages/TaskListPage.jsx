@@ -13,11 +13,12 @@ import {
   IonButton,
   IonModal,
   IonRow,
+  useIonViewWillEnter
 } from '@ionic/react';
 
 import TaskItem from '../components/TaskItem';
 import '../css/taskList.css';
-
+import { uploadNotificationData } from '../firebase';
 /*
 props:
   task: array
@@ -32,6 +33,28 @@ const TaskListPage = (props) => {
   const [editTaskTitle, setEditTaskTitle] = useState("")
   const [editTaskLimit, setEditTaskLimit] = useState("")
   const [currTaskIdx, setCurrTaskIdx] = useState(-1)
+  
+  // 期限切れタスクの処理
+  useIonViewWillEnter(() => {
+    console.log('ionViewWillEnter')
+    console.log(JSON.parse(localStorage.taskList))
+    const taskList = JSON.parse(localStorage.taskList)
+    const date = new Date()
+    const y = date.getFullYear().toString()
+    const m = (date.getMonth()+1).toString()
+    const d = date.getDate().toString()
+    const today = y + m + d
+    taskList.map((value, index) => {
+      let taskLimit = value.limit.replace(/-/g, '')
+      if(parseInt(taskLimit) < parseInt(today)) {
+        uploadNotificationData( props.userName ,'expired', value.title)
+        taskList.splice(index, 1)
+      }
+    })
+    console.log(taskList)
+    props.setTaskList(taskList)
+
+  })
 
   return (
     <IonPage>

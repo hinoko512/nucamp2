@@ -9,7 +9,8 @@ import {
   IonInput,
   IonButton,
   IonLabel,
-  IonAlert
+  IonAlert,
+  useIonViewWillEnter
 } from '@ionic/react'
 import React, { useState } from 'react'
 import GroupMember from '../components/GroupMember';
@@ -24,6 +25,9 @@ const ProfilePage = (props) => {
   const [addMemberName, setAddMemberName] = useState(false)
   const [showEditNameAlert, setShowEditNameAlert] = useState(false)
 
+  useIonViewWillEnter(() => {
+    console.log('willEnter: profile\n', localStorage.taskList)
+  })
   return(
     <IonPage>
       <IonHeader>

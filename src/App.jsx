@@ -38,7 +38,6 @@ import {
   withIonLifeCycle,
 } from '@ionic/react';
 import { IonReactRouter } from '@ionic/react-router';
-import { convertCompilerOptionsFromJson } from 'typescript';
 
 
 class App extends React.Component {
@@ -68,6 +67,7 @@ class App extends React.Component {
     //   const firestoreNotificationList = getNotificationList(this.state.groupMember);
     //   console.log('[info] getMotificationList')
     // }
+    this.setTaskList = this.setTaskList.bind(this);
     this.setUserName = this.setUserName.bind(this);
 
     this.addGroupMember = this.addGroupMember.bind(this);
@@ -84,32 +84,37 @@ class App extends React.Component {
   showNotiList = () => {
     console.log(this.state.notificationList)
   }
+  // タスクリストを更新する関数
+  setTaskList = (taskList) => {
+    this.setState({taskList: taskList})
+    localStorage.taskList=JSON.stringify(this.state.taskList)
+  }
 
   // ユーザネームを設定する関数
   setUserName = (name) => {
     this.setState({userName: name})
     // this.state.groupMemberの0番目は常に自分
-    let newGroupMember = this.state.groupMember
+    let newGroupMember = Object.assign([], this.state.groupMember)
     newGroupMember[0] = name
     this.setState({groupMember: newGroupMember})
     console.log('[info] setUserName', this.state.userName)
-    localStorage.userName = JSON.stringify(this.state.userName)
-    localStorage.groupMember = JSON.stringify(this.state.groupMember)
+    localStorage.userName = JSON.stringify(name)
+    localStorage.groupMember = JSON.stringify(newGroupMember)
   }
   // グループメンバーを追加する
   addGroupMember = (name) => {
-    let newGroupMember = this.state.groupMember;
+    let newGroupMember = Object.assign([], this.state.groupMember);
     newGroupMember.push(name)
     this.setState({groupMember: newGroupMember});
-    localStorage.groupMember = JSON.stringify(this.state.groupMember)
+    localStorage.groupMember = JSON.stringify(newGroupMember)
     console.log('[info] Add GroupMember');
   }
   // グループメンバーを削除する
   deleteGroupMember = (index) => {
-    let newGroupMember = this.state.groupMember;
+    let newGroupMember = Object.assign([], this.state.groupMember);
     newGroupMember.splice(index, 1)
     this.setState({groupMember: newGroupMember});
-    localStorage.groupMember = JSON.stringify(this.state.groupMember)
+    localStorage.groupMember = JSON.stringify(newGroupMember)
     console.log('[info] Delete GroupMember');
   }
 
@@ -121,43 +126,43 @@ class App extends React.Component {
       "title": title,
       "limit": limit
     }
-    let updatedTasks = this.state.taskList;
-    updatedTasks.push(newTask);
-    this.setState({tasks: updatedTasks});
-    localStorage.taskList = JSON.stringify(this.state.taskList);
-    console.log('[info] addTask');
+    let newTaskList = Object.assign([], this.state.taskList);
+    newTaskList.push(newTask);
+    this.setState({taskList: newTaskList});
+    localStorage.taskList = JSON.stringify(newTaskList);
+    console.log('[info] addTask\n', this.state.taskList);
   }
   // 編集ボタンを押した時の処理
   editTask = (title, limit, index) => {
-    let newTaskList = this.state.taskList
+    let newTaskList = Object.assign([], this.state.taskList)
     newTaskList[index] = {
       "title": title,
       "limit": limit
     }
     this.setState({taskList: newTaskList})
-    localStorage.taskList = JSON.stringify(this.state.taskList)
+    localStorage.taskList = JSON.stringify(newTaskList)
     console.log('[info] editTask')
   }
   // 完了ボタンを押したときの処理
   completeTask = async (index) => {
-    let newTaskList = this.state.taskList
+    let newTaskList = Object.assign([], this.state.taskList)
     const userName = this.state.userName
     const type = "finish"
     const title = newTaskList[index].title
     await uploadNotificationData(userName, type, title)
     newTaskList.splice(index, 1)
     this.setState({taskList: newTaskList})
-    localStorage.taskList = JSON.stringify(this.state.taskList)
+    localStorage.taskList = JSON.stringify(newTaskList)
     const newList = await this.updateNotificationList()
     console.log(newList)
   }
   //削除ボタンを押したときの処理
   deleteTask = (index) => {
-    let newTaskList = this.state.taskList;
+    let newTaskList = Object.assign([], this.state.taskList);
     newTaskList.splice(index, 1);
     this.setState({taskList: newTaskList})
-    localStorage.taskList= JSON.stringify(this.state.taskList);
-    console.log('[info] deleteTask');
+    localStorage.taskList= JSON.stringify(newTaskList);
+    console.log('[info] deleteTask\n', newTaskList);
   }
 
 
@@ -181,6 +186,7 @@ class App extends React.Component {
           <IonTabs>
             <IonRouterOutlet>
               {/* Profile Page */}
+              <Route path="/" render={() => <Redirect to="/profile" />} exact={true} />
               <Route path="/profile" exact={true} render={() => 
                 <ProfilePage 
                   userName={this.state.userName}
@@ -188,12 +194,13 @@ class App extends React.Component {
                   addGroupMember={this.addGroupMember}
                   deleteGroupMember={this.deleteGroupMember}
                   setUserName={this.setUserName}
+                  taskList={this.state.taskList}
                 />}
               />
               {/* taskList Page*/}
-              <Route path="/" render={() => <Redirect to="/tasklist" />} exact={true} />
               <Route path="/tasklist" exact={true} render={() => 
                 <TaskListPage 
+                  setTaskList={this.setTaskList}
                   taskList={this.state.taskList} 
                   deleteTask={this.deleteTask} 
                   addTask={this.addTask}
