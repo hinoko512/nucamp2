@@ -24,18 +24,19 @@ const NotificationPage = (props) => {
   const [notificationList, setNotificationList] = useState([])
 
   useIonViewWillEnter(async() => {
-    const querySnapshot = await 
-      firebase.firestore()
-      .collection("notificationList")
-      .where("userName", "in", props.groupMember)
-      .get()
-    const newList = [];
-    querySnapshot.forEach(doc => {
-      newList.push(doc.data());
-    });
-    console.log(newList)
-    setNotificationList(newList);
-    console.log(notificationList)
+    if(props.groupMember.length !== 0) {
+      const querySnapshot = await 
+        firebase.firestore()
+        .collection("notificationList")
+        .where("userName", "in", props.groupMember)
+        .get()
+      const newList = [];
+      querySnapshot.forEach(doc => {
+        newList.push(doc.data());
+      });
+      console.log(newList)
+      setNotificationList(newList);
+    }
   })
 
   return(

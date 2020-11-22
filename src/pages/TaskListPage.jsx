@@ -70,12 +70,14 @@ const TaskListPage = (props) => {
         <IonItem>  
           <IonInput 
             placeholder="課題内容" 
-            onIonChange={(e) => {setNewTaskTitle(e.detail.value); console.log(newTaskTitle)}}
+            value={newTaskTitle}
+            onIonChange={(e) => setNewTaskTitle(e.detail.value)}
           ></IonInput> 
         </IonItem>
         <IonItem>
           <IonLabel position="floating">期限</IonLabel>
           <IonDatetime 
+            value={newTaskLimit}
             displayFormat="YYYY MM DD" 
             pickerFormat="YYYY MM DD"
             max="2030-01-01"
@@ -83,10 +85,14 @@ const TaskListPage = (props) => {
           ></IonDatetime>
         </IonItem>
         <IonButton 
-          onClick={() => props.addTask(newTaskTitle, newTaskLimit)} 
           className="ion-margin-top" 
           color="primary" 
           expand="block"
+          onClick={() => {
+            props.addTask(newTaskTitle, newTaskLimit)
+            setNewTaskTitle("");
+            setNewTaskLimit("");
+          }} 
         >追加</IonButton>
       </div>
 
